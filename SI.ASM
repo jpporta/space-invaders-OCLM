@@ -167,7 +167,7 @@ STATUS_BARREIRA	DB	21,0,0,0,0,0,0,0,0,0,0,0,33,0,0,0
 		DB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 		DB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 		DB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-		DB	0,0,0,98,0,0,98,0,0,97,0,0,98,0,0,0
+		DB	0,0,0,98,0,0,98,0,0,98,0,0,98,0,0,0
 		DB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 
@@ -194,15 +194,15 @@ PLAYER_MOVIMENTO	DB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 		DB	99,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 LIMPA_TELA	DB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-		DB	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-		DB	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-		DB	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-		DB	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-		DB	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-		DB	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-		DB	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-		DB	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-		DB	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+		DB	51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51
+		DB	51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51
+		DB	51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51
+		DB	51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51
+		DB	51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51
+		DB	51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51
+		DB	51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51
+		DB	51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51
+		DB	51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51,51
 
 VEL_X	DW	0
 VEL_Y	DW	0
@@ -221,7 +221,7 @@ COUNT	DW	0
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 .CODE
 
-MAIN	PROC
+MAIN	PROC; inicio do programa ---------------------------------------------------
 	CALL	SET_DISPLAY_MODE ;INICIALIZA MODO GRAFICO
 	MOV 	AX,@DATA	;INICIALIZA DATA
 	MOV 	DS,AX
@@ -231,28 +231,44 @@ INICIOMENU:
 	MOV 	AH,9
 	INT 	21h
 
-	;pula linha
 
-	;PRINTA_OBJETO	ALIEN_MENU, 15, 10, 30, 121, 10648
 	LEA 	DX,MSG1 	;Le mensagem informando o usuario que precisa pressionar o espaço para começar o jogo
 	MOV 	AH,9
 	INT 	21h
 
-	MOV 	AH,1		;Compara o caracter que o usuario digitou com espaço
-	INT 	21h
-	CMP 	AL, ' '
-	JNE 	INICIOMENU	;Se o usuario digitou espaço pulo para INICIO_GAME
-
-	CALL	SET_DISPLAY_MODE
-	CALL	INICIO_GAME			;Se o usurario digitar algo diferente volta para o inicio
-;;;;;;;;;;;;;;;;;;;FIM MENU;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	CALL	FIM
-
-MAIN	ENDP
-INICIO_GAME	PROC
-
 	MOV 	AH,1
 	INT 	21h
+	CMP	AL, 27
+	JE	FIM
+	CMP 	AL, ' ';compara o digitado com espaco
+	JNE 	INICIOMENU
+	CALL	SET_DISPLAY_MODE
+	CALL	INICIO_GAME; comecao o jogo
+;;;;;;;;;;;;;;;;;;;FIM MENU;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+FIM:	CALL	FIM
+
+MAIN	ENDP;fim do programa---------------------------------------------------
+INICIO_GAME	PROC
+
+	CALL	LIMPA_TUDO
+
+	MOV 	AX, 0100h
+	INT	16h
+	JZ	NAO_SAI
+
+	MOV	AH, 07h
+	INT 	21h
+
+	CMP	AL,97
+	JNE	NAO_ESQUERDA
+	;CALL	MOV_ESQUERDA
+	;JMP	NAO_SAI
+NAO_ESQUERDA:
+	CMP	AL,100
+	JNE	NAO_DIREITA
+	;CALL	MOV_DIREITA
+	;JMP	NAO_SAI
+NAO_DIREITA:
 	CMP 	AL, 27
 	JNE	NAO_SAI
 	RET
@@ -262,7 +278,23 @@ NAO_SAI:
 
 	CALL	INICIO_GAME
 
-INICIO_GAME	ENDP
+INICIO_GAME	ENDP; FIM DO JOGO + LOOP ATE AL = 27
+
+LIMPA_TUDO	PROC
+	PUSH	CX
+	PUSH	DX
+	MOV	X,0
+	MOV	Y,0
+	XOR	SI,SI
+	LEA	SI,LIMPA_TELA
+
+	CALL	PRINTA_MATRIZ_AUX
+
+	POP	CX
+	POP	DX
+
+	RET
+LIMPA_TUDO	ENDP
 
 FIM		PROC
 
@@ -282,7 +314,7 @@ FIM	ENDP
 
 
 
-DISPLAY_OBJ		PROC
+DISPLAY_OBJ		PROC ; funcao auxiliar para printar qualquer objeto------
 	MOV	LADO_X,0
 	MOV	LADO_Y,0
 	MOV	COUNT,0
@@ -318,8 +350,9 @@ CONTINUA:	MOV	BX, TOTAL_M
 
 	RET
 
-DISPLAY_OBJ	ENDP
-SET_DISPLAY_MODE		PROC
+DISPLAY_OBJ	ENDP;-------------------------------------------------------
+
+SET_DISPLAY_MODE		PROC;funcao para mudar a o modo de video do dos box
 	MOV	AH,0	;SET MODEL
 	MOV	AL,13H	;MODE 0bh, 320X200 many COLOR
 	INT	10H
@@ -330,12 +363,14 @@ SET_DISPLAY_MODE		PROC
 	INT	10H
 
 	RET
-SET_DISPLAY_MODE	ENDP
+SET_DISPLAY_MODE	ENDP;-------------------------------------------------------
+
 PRINTA_TUDO	PROC
 	CALL	PRINTA_MATRIZ
 	CALL	PRINTA_STATUS
 	CALL	PRINTA_PLAYER
 PRINTA_TUDO	ENDP
+
 PRINTA_PLAYER	PROC
 	PUSH	CX
 	PUSH	DX
@@ -351,6 +386,7 @@ PRINTA_PLAYER	PROC
 
 	RET
 PRINTA_PLAYER	ENDP
+
 PRINTA_STATUS	PROC
 	PUSH	CX
 	PUSH	DX
@@ -366,6 +402,7 @@ PRINTA_STATUS	PROC
 
 	RET
 PRINTA_STATUS	ENDP
+
 PRINTA_MATRIZ	PROC
 	PUSH	CX
 	PUSH	DX
@@ -426,6 +463,10 @@ FOWARD11:
 	JNE	FOWARD12
 	PRINTA_OBJETO	BARREIRA_D, 43, CX, DX, 20, 140
 FOWARD12:
+	CMP	[SI], 51
+	JNE	FOWARD13
+	PRINTA_OBJETO	BLOCO_2020, 0, CX, DX, 20, 400
+FOWARD13:
 
 	INC	SI
 	ADD	X,20
@@ -443,33 +484,5 @@ FOWARD5:
 
 	RET
 PRINTA_MATRIZ_AUX	ENDP
-
-
-LIMPAR_TELA		PROC
-	PUSH	CX
-	PUSH	DX
-	MOV	X,0
-	MOV	Y,0
-RETORNAL:
-	MOV	CX,X
-	MOV	DX,Y
-
-	PRINTA_OBJETO	BLOCO_2020, 0, CX, DX, 20, 400
-
-	ADD	X,20
-	CMP	X,320
-	JB	RETORNAL
-	MOV	X,0
-	ADD	Y,20
-	CMP	Y,200
-	JB	RETORNAL
-
-	POP	CX
-	POP	DX
-
-	RET
-LIMPAR_TELA	ENDP
-
-
 
 END	MAIN
